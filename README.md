@@ -1,7 +1,7 @@
 # Dial-In Productivity Timer
 
 A clean, modern Pomodoro timer web application with integrated task management to help you stay focused and productive.
-https://dial-in-timer.wb1.uk/
+https://dial-in.wb1.uk/
 
 ## Features
 

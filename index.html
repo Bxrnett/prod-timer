@@ -7,42 +7,85 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🔥 Productivity Timer 🔥</h1>
-        
-        <div class="timer-section">
-            <div class="timer-label">
-                <span class="status-badge" id="statusBadge">Ready to Dial-In</span>
-            </div>
-            
-            <!-- Coffee Cup Visualization -->
-            <div class="coffee-container">
-                <div class="coffee-cup">
-                    <div class="coffee-liquid" id="coffeeLiquid"></div>
-                    <div class="coffee-handle"></div>
+    <!-- Landing Page -->
+    <div class="page active" id="landingPage">
+        <div class="landing-container">
+            <div class="landing-content">
+                <div class="landing-icon">🚀</div>
+                <h1 class="landing-title">Welcome to Your Productivity Zone</h1>
+                <p class="landing-subtitle">Let's make every minute count together!</p>
+                
+                <div class="name-input-section">
+                    <label for="nameInput" class="name-label">What should we call you?</label>
+                    <input 
+                        type="text" 
+                        id="nameInput" 
+                        class="name-input"
+                        placeholder="Enter your name..." 
+                        onkeypress="handleNameInputKeypress(event)"
+                        autofocus
+                    />
+                    <button class="btn-primary btn-large" onclick="saveName()">Let's Get Started! 🎯</button>
                 </div>
             </div>
-            
-            <div class="timer-display" id="timerDisplay">25:00</div>
-            
-            <div class="session-info">
-                <div>Session: <strong id="sessionCount">1/4</strong></div>
-                <div>Session completed: <strong id="pomodoroCount">0</strong></div>
-            </div>
+        </div>
+    </div>
 
-            <div class="current-task" id="currentTaskDisplay">
-                No task selected
-            </div>
+    <!-- Navigation -->
+    <nav class="nav-bar" id="mainNav" style="display: none;">
+        <button class="nav-btn active" id="timerNavBtn" onclick="showPage('timer')">⏱️ Timer</button>
+        <button class="nav-btn" id="tasksNavBtn" onclick="showPage('tasks')">📝 Tasks</button>
+        <button class="nav-btn" id="profileBtn" onclick="editName()">👤 <span id="navUserName"></span></button>
+    </nav>
 
-            <div class="button-group">
-                <button class="btn-primary" id="startBtn" onclick="startTimer()">Start</button>
-                <button class="btn-secondary" id="pauseBtn" onclick="pauseTimer()" disabled>Pause</button>
-                <button class="btn-danger" id="resetBtn" onclick="resetTimer()">Reset</button>
+    <!-- Timer Page -->
+    <div class="page" id="timerPage">
+        <div class="container">
+            <h1 id="timerPageTitle">Productivity Timer</h1>
+            <p class="welcome-message" id="welcomeMessage"></p>
+            
+            <div class="timer-section">
+                <div class="timer-label">
+                    <span class="status-badge" id="statusBadge">Ready to Dial-In</span>
+                </div>
+                
+                <!-- Coffee Cup Visualization -->
+                <div class="coffee-container">
+                    <div class="coffee-cup">
+                        <div class="coffee-liquid" id="coffeeLiquid"></div>
+                        <div class="coffee-handle"></div>
+                    </div>
+                </div>
+                
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                
+                <div class="session-info">
+                    <div>Session: <strong id="sessionCount">1/4</strong></div>
+                    <div>Session completed: <strong id="pomodoroCount">0</strong></div>
+                </div>
+
+                <div class="current-task" id="currentTaskDisplay">
+                    No task selected
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="startBtn" onclick="startTimer()">Start</button>
+                    <button class="btn-secondary" id="pauseBtn" onclick="pauseTimer()" disabled>Pause</button>
+                    <button class="btn-danger" id="resetBtn" onclick="resetTimer()">Reset</button>
+                </div>
+
+                <div class="page-hint">
+                    💡 Go to Tasks page to select or add tasks
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="task-section">
-            <h2>📝 Task List</h2>
+    <!-- Tasks Page -->
+    <div class="page" id="tasksPage">
+        <div class="container">
+            <h1 id="tasksPageTitle">📝 Task List</h1>
+            <p class="welcome-message" id="tasksWelcomeMessage"></p>
             
             <div class="task-input-group">
                 <input 
@@ -57,10 +100,96 @@
             <ul class="task-list" id="taskList">
                 <li class="empty-state">No tasks yet. Add one above!</li>
             </ul>
+
+            <div class="page-hint" id="taskPageHint" style="display: none;">
+                ✅ Task selected! Go to Timer page to start working
+            </div>
         </div>
     </div>
 
     <script>
+        // User data
+        let userName = localStorage.getItem('productivityTimerUserName') || '';
+
+        // Page navigation
+        let currentPage = 'landing';
+
+        function showPage(pageName) {
+            currentPage = pageName;
+            
+            // Update pages
+            document.getElementById('landingPage').classList.toggle('active', pageName === 'landing');
+            document.getElementById('timerPage').classList.toggle('active', pageName === 'timer');
+            document.getElementById('tasksPage').classList.toggle('active', pageName === 'tasks');
+            
+            // Update nav buttons
+            document.getElementById('timerNavBtn').classList.toggle('active', pageName === 'timer');
+            document.getElementById('tasksNavBtn').classList.toggle('active', pageName === 'tasks');
+            document.getElementById('profileBtn').classList.toggle('active', false);
+        }
+
+        function saveName() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            
+            if (!name) {
+                alert('Please enter your name to continue!');
+                return;
+            }
+            
+            userName = name;
+            localStorage.setItem('productivityTimerUserName', userName);
+            
+            // Show main app
+            document.getElementById('mainNav').style.display = 'flex';
+            updatePersonalization();
+            showPage('timer');
+        }
+
+        function handleNameInputKeypress(event) {
+            if (event.key === 'Enter') {
+                saveName();
+            }
+        }
+
+        function editName() {
+            const newName = prompt('Enter your new name:', userName);
+            if (newName && newName.trim()) {
+                userName = newName.trim();
+                localStorage.setItem('productivityTimerUserName', userName);
+                updatePersonalization();
+            }
+        }
+
+        function updatePersonalization() {
+            const greetings = [
+                `Hey ${userName}! Ready to crush it?`,
+                `Welcome back, ${userName}! Let's be productive!`,
+                `Hi ${userName}, time to focus!`,
+                `${userName}, you've got this! 💪`,
+                `Great to see you, ${userName}!`
+            ];
+            
+            const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+            
+            // Update all personalized elements
+            document.getElementById('navUserName').textContent = userName;
+            document.getElementById('timerPageTitle').textContent = `${userName}'s Productivity Timer`;
+            document.getElementById('welcomeMessage').textContent = greeting;
+            document.getElementById('tasksPageTitle').textContent = `${userName}'s Tasks`;
+            document.getElementById('tasksWelcomeMessage').textContent = `Organize your work, ${userName}!`;
+        }
+
+        function checkUserStatus() {
+            if (userName) {
+                document.getElementById('mainNav').style.display = 'flex';
+                updatePersonalization();
+                showPage('timer');
+            } else {
+                showPage('landing');
+            }
+        }
+
         // Time settings
         let timeLeft = 25 * 60; // 25 minutes in seconds
         let timerInterval = null;
@@ -225,14 +354,42 @@
             if (selectedTaskId === taskId) {
                 selectedTaskId = null;
                 updateCurrentTaskDisplay();
+                updateTaskPageHint();
+            }
+            renderTasks();
+        }
+
+        function completeTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                alert(`🎉 Congratulations, ${userName}! You completed: "${task.text}"\n\nYou're smashing it!`);
+            }
+            tasks = tasks.filter(t => t.id !== taskId);
+            if (selectedTaskId === taskId) {
+                selectedTaskId = null;
+                updateCurrentTaskDisplay();
+                updateTaskPageHint();
             }
             renderTasks();
         }
 
         function selectTask(taskId) {
-            selectedTaskId = taskId;
+            // Toggle selection: if clicking the already selected task, deselect it
+            if (selectedTaskId === taskId) {
+                selectedTaskId = null;
+            } else {
+                selectedTaskId = taskId;
+            }
             renderTasks();
             updateCurrentTaskDisplay();
+            updateTaskPageHint();
+        }
+
+        function updateTaskPageHint() {
+            const hint = document.getElementById('taskPageHint');
+            if (hint) {
+                hint.style.display = selectedTaskId ? 'block' : 'none';
+            }
         }
 
         function updateCurrentTaskDisplay() {
@@ -250,6 +407,7 @@
             
             if (tasks.length === 0) {
                 taskList.innerHTML = '<li class="empty-state">No tasks yet. Add one above!</li>';
+                updateTaskPageHint();
                 return;
             }
             
@@ -262,11 +420,13 @@
                         onchange="selectTask(${task.id})"
                     />
                     <span class="task-text" onclick="selectTask(${task.id})">${task.text}</span>
+                    <button class="complete-btn" onclick="completeTask(${task.id})">✓ Complete</button>
                     <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
                 </li>
             `).join('');
             
             updateCurrentTaskDisplay();
+            updateTaskPageHint();
         }
 
         function handleTaskInputKeypress(event) {
@@ -277,6 +437,7 @@
 
         // Initialize display
         updateDisplay();
+        checkUserStatus();
     </script>
 </body>
 </html>
